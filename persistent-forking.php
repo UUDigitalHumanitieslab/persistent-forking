@@ -170,9 +170,4 @@ class PersistentForking {
 
 PersistentForking::add_hooks();
 
-// function print_current_hook() {
-//     echo '<p>' . current_filter() . '</p>';
-// }
-// add_action( 'all', 'print_current_hook' );
-
 ?>

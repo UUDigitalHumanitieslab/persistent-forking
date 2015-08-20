@@ -43,7 +43,7 @@ class PersistentForking {
         $args = array(
             'labels'            => $labels,
             'hierarchical'      => false,
-            'show_ui'           => false,
+            'show_ui'           => true,
             'show_in_nav_menus' => true,
             'show_admin_column' => true,
             'query_var'         => true,

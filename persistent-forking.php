@@ -22,7 +22,7 @@ class PersistentForking {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
         add_action('add_meta_boxes', array('PersistentForking', 'editor_parent_metabox'));
-        add_action('save_post', array('PersistentForking', 'save_customfields'), 10, 2);
+        add_action('save_post', array('PersistentForking', 'save_experiment'), 10, 2);
     }
     
     static function create_experiment_taxonomies( ) {
@@ -41,12 +41,14 @@ class PersistentForking {
         );
  
         $args = array(
-            'hierarchical'      => false,
             'labels'            => $labels,
+            'hierarchical'      => false,
             'show_ui'           => false,
+            'show_in_nav_menus' => true,
             'show_admin_column' => true,
             'query_var'         => true,
             'rewrite'           => array( 'slug' => 'experiment' ),
+            // 'meta_box_cb' => self::some_function,  // custom metabox callback
         );
  
         register_taxonomy( 'experiment', array( 'post' ), $args );
@@ -101,20 +103,30 @@ class PersistentForking {
         );
         $fork_id = wp_insert_post($fork);
         if (! $fork_id) return false;
-        self::save_customfields(
-            $fork_id, $fork, $parent_id,
-            get_post_meta($parent_id, '_persistfork-root')
-        );
+        add_post_meta($fork_id, '_persistfork-parent', $parent_id, true);
         
         return $fork_id;
     }
 
-    static function save_customfields($post_id, $post, $parent = null, $root = null) {
-        if ($parent != null) {
-            add_post_meta($post_id, '_persistfork-parent', $parent, true);
+    static function save_experiment($post_id, $post) {
+        if ($post->post_status != 'publish') return;
+        $terms = wp_get_object_terms($post_id, 'experiment');
+        $term = reset($terms);
+        if ($term) return;
+        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
+        if ($parent_id) {
+            $terms = wp_get_object_terms($parent_id, 'experiment');
+            $term = reset($terms);
+            wp_add_object_terms($post_id, $term->term_id, 'experiment');
+        } else {
+            $term = wp_insert_term($post->post_title, 'experiment');
+            $counter = 1;
+            while (is_object($term) && is_a($term, 'WP_Error')) {
+                $term = wp_insert_term($post->post_title . $counter, 'experiment');
+                ++$counter;
+            }
+            wp_add_object_terms($post_id, $term['term_id'], 'experiment');
         }
-        if ($root == null) $root = $post_id;
-        add_post_meta($post_id, '_persistfork-root', $root, true);
     }
     
     static function create_forking_form( ) {
@@ -147,8 +159,12 @@ class PersistentForking {
     static function display_editor_parent_metabox( ) {
         $post_id = $GLOBALS['post']->ID;
         $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        $parent = get_post($parent_id);
-        echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        if (! $parent_id) {
+            echo 'none';
+        } else {
+            $parent = get_post($parent_id);
+            echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        }
     }
 }
 

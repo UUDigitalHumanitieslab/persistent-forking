@@ -17,7 +17,7 @@ class PersistentForking {
         add_action('init', array('PersistentForking', 'create_experiment_taxonomies'), 0);
         add_action('init', array('PersistentForking', 'add_fork_capability'));
         add_action('admin_init', array('PersistentForking', 'add_fork_capability'));
-        add_filter('the_content', array('PersistentForking', 'add_fork_button'), 15);
+        add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
         if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
@@ -66,18 +66,27 @@ class PersistentForking {
         );
     }
 
-    static function add_fork_button($content) {
+    static function add_fork_controls($content) {
         if (! current_user_can('create_persistent_forks')) {
             return $content;
         }
         $post = $GLOBALS['post'];
-        if ($post->post_type != 'post') return $content;  // make the post type a setting
-        $url = add_query_arg(array(
+        $post_id = $post->ID;
+        if ($post->post_type != 'post') return $content;
+        $fork_url = add_query_arg(array(
             'action' => 'persistent_fork',
-            'post' => $post->ID,
+            'post' => $post_id,
             'nonce' => wp_create_nonce('persistent_forking')
         ), home_url());
-        return $content . '<a href="' . $url . '" title="Fork this experiment">Fork</a>';
+        $img = '<img src="' . plugins_url("/img/fork_icon.png", __FILE__) . '" style="display: inline;">';
+        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this experiment">' . $img . ' Fork</a>';
+        $parent_anchor = '';
+        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
+        if ($parent_id) {
+            $parent = get_post($parent_id);
+            $parent_anchor = ' | Forked from: <a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        }
+        return $fork_anchor . $parent_anchor . $content;
     }
     
     static function fork($parent_post = null, $author = null) {
@@ -96,7 +105,7 @@ class PersistentForking {
         $fork = array(
             'post_author' => $author,
             'post_status' => 'draft',
-            'post_title' => $parent_post->post_title,
+            'post_title' => '[fork] ' . $parent_post->post_title,
             'post_type' => $parent_post->post_type
         );
         $fork_id = wp_insert_post($fork);

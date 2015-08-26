@@ -17,7 +17,7 @@ class PersistentForking {
         add_action('init', array('PersistentForking', 'create_experiment_taxonomies'), 0);
         add_action('init', array('PersistentForking', 'add_fork_capability'));
         add_action('admin_init', array('PersistentForking', 'add_fork_capability'));
-        add_filter('the_content', array('PersistentForking', 'add_fork_button'), 15);
+        add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
         if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
@@ -66,7 +66,7 @@ class PersistentForking {
         );
     }
 
-    static function add_fork_button($content) {
+    static function add_fork_controls($content) {
         if (! current_user_can('create_persistent_forks')) {
             return $content;
         }

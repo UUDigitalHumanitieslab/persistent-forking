@@ -77,7 +77,9 @@ class PersistentForking {
             'post' => $post->ID,
             'nonce' => wp_create_nonce('persistent_forking')
         ), home_url());
-        return '<a href="' . $url . '" title="Fork this experiment">Fork</a>' . $content;
+        $img = '<img src="' . plugins_url("/img/fork_icon.png", __FILE__) . '" style="display: inline;">';
+        $anchor = '<a href="' . $url . '" title="Fork this experiment">' . $img . ' Fork</a>';
+        return $anchor . $content;
     }
     
     static function fork($parent_post = null, $author = null) {

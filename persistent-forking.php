@@ -15,8 +15,6 @@ class PersistentForking {
     
     static function add_hooks( ) {
         add_action('init', array('PersistentForking', 'create_experiment_taxonomies'), 0);
-        add_action('init', array('PersistentForking', 'add_fork_capability'));
-        add_action('admin_init', array('PersistentForking', 'add_fork_capability'));
         add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
         if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
             add_action('init', array('PersistentForking', 'create_forking_form'));
@@ -52,13 +50,6 @@ class PersistentForking {
         register_taxonomy( 'experiment', array( 'post' ), $args );
     }
     
-    static function add_fork_capability( ) {
-        foreach (array('administrator', 'editor', 'author') as $name) {
-            $role = get_role($name); // should be a settings variable
-            $role->add_cap('create_persistent_forks');
-        }
-    }
-    
     static function custom_taxonomy_visualisation_callback( ) {
         wp_enqueue_script( 'persistfork-tax-visualisation',
             plugins_url( '/js/visualisation.js', __FILE__ ),
@@ -67,7 +58,7 @@ class PersistentForking {
     }
 
     static function add_fork_controls($content) {
-        if (! current_user_can('create_persistent_forks')) {
+        if (! current_user_can('edit_posts')) {
             return $content;
         }
         $post = $GLOBALS['post'];
@@ -97,7 +88,7 @@ class PersistentForking {
         $parent_id = $parent_post->ID;
         
         if ($author == null) $author = wp_get_current_user()->ID;
-        if (! user_can($author, 'create_persistent_forks')) wp_die(__(
+        if (! user_can($author, 'edit_posts')) wp_die(__(
             'You are not allowed to create forks',
             'persistent-forking'
         ));
@@ -127,7 +118,7 @@ class PersistentForking {
     }
     
     static function create_forking_form( ) {
-        if (! current_user_can('create_persistent_forks')) {
+        if (! current_user_can('edit_posts')) {
             return;
         }
         if (! wp_verify_nonce($_REQUEST['nonce'], 'persistent_forking')) {

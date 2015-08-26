@@ -71,15 +71,22 @@ class PersistentForking {
             return $content;
         }
         $post = $GLOBALS['post'];
+        $post_id = $post->ID;
         if ($post->post_type != 'post') return $content;  // make the post type a setting
-        $url = add_query_arg(array(
+        $fork_url = add_query_arg(array(
             'action' => 'persistent_fork',
-            'post' => $post->ID,
+            'post' => $post_id,
             'nonce' => wp_create_nonce('persistent_forking')
         ), home_url());
         $img = '<img src="' . plugins_url("/img/fork_icon.png", __FILE__) . '" style="display: inline;">';
-        $anchor = '<a href="' . $url . '" title="Fork this experiment">' . $img . ' Fork</a>';
-        return $anchor . $content;
+        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this experiment">' . $img . ' Fork</a>';
+        $parent_anchor = '';
+        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
+        if ($parent_id) {
+            $parent = get_post($parent_id);
+            $parent_anchor = ' | Forked from: <a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        }
+        return $fork_anchor . $parent_anchor . $content;
     }
     
     static function fork($parent_post = null, $author = null) {

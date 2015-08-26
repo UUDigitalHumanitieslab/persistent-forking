@@ -72,7 +72,7 @@ class PersistentForking {
         }
         $post = $GLOBALS['post'];
         $post_id = $post->ID;
-        if ($post->post_type != 'post') return $content;  // make the post type a setting
+        if ($post->post_type != 'post') return $content;
         $fork_url = add_query_arg(array(
             'action' => 'persistent_fork',
             'post' => $post_id,

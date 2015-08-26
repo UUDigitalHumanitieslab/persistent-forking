@@ -14,7 +14,7 @@ License URI: http://opensource.org/licenses/MIT
 class PersistentForking {
     
     static function add_hooks( ) {
-        add_action('init', array('PersistentForking', 'create_experiment_taxonomies'), 0);
+        add_action('init', array('PersistentForking', 'create_family_taxonomies'), 0);
         add_action('init', array('PersistentForking', 'add_fork_capability'));
         add_action('admin_init', array('PersistentForking', 'add_fork_capability'));
         add_filter('the_content', array('PersistentForking', 'add_fork_button'), 15);
@@ -22,22 +22,22 @@ class PersistentForking {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
         add_action('add_meta_boxes', array('PersistentForking', 'editor_parent_metabox'));
-        add_action('save_post', array('PersistentForking', 'save_experiment'), 10, 2);
+        add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
     }
     
-    static function create_experiment_taxonomies( ) {
+    static function create_family_taxonomies( ) {
         $labels = array(
-            'name'              => _x( 'Experiments', 'taxonomy general name' ),
-            'singular_name'     => _x( 'Experiment', 'taxonomy singular name' ),
-            'search_items'      => __( 'Search Experiments' ),
-            'all_items'         => __( 'All Experiments' ),
-            'parent_item'       => __( 'Parent Experiment' ),
-            'parent_item_colon' => __( 'Parent Experiment:' ),
-            'edit_item'         => __( 'Edit Experiment' ),
-            'update_item'       => __( 'Update Experiment' ),
-            'add_new_item'      => __( 'Add New Experiment' ),
-            'new_item_name'     => __( 'New Experiment Name' ),
-            'menu_name'         => __( 'Experiment' ),
+            'name'              => _x( 'Families', 'taxonomy general name' ),
+            'singular_name'     => _x( 'Family', 'taxonomy singular name' ),
+            'search_items'      => __( 'Search Families' ),
+            'all_items'         => __( 'All Families' ),
+            'parent_item'       => __( 'Parent Family' ),
+            'parent_item_colon' => __( 'Parent Family:' ),
+            'edit_item'         => __( 'Edit Family' ),
+            'update_item'       => __( 'Update Family' ),
+            'add_new_item'      => __( 'Add New Family' ),
+            'new_item_name'     => __( 'New Family Name' ),
+            'menu_name'         => __( 'Family' ),
         );
  
         $args = array(
@@ -47,11 +47,11 @@ class PersistentForking {
             'show_in_nav_menus' => true,
             'show_admin_column' => true,
             'query_var'         => true,
-            'rewrite'           => array( 'slug' => 'experiment' ),
+            'rewrite'           => array( 'slug' => 'family' ),
             // 'meta_box_cb' => self::some_function,  // custom metabox callback
         );
  
-        register_taxonomy( 'experiment', array( 'post' ), $args );
+        register_taxonomy( 'family', array( 'post' ), $args );
     }
     
     static function add_fork_capability( ) {
@@ -79,7 +79,7 @@ class PersistentForking {
             'post' => $post->ID,
             'nonce' => wp_create_nonce('persistent_forking')
         ), home_url());
-        return $content . '<a href="' . $url . '" title="Fork this experiment">Fork</a>';
+        return $content . '<a href="' . $url . '" title="Fork this post">Fork</a>';
     }
     
     static function fork($parent_post = null, $author = null) {
@@ -108,24 +108,24 @@ class PersistentForking {
         return $fork_id;
     }
 
-    static function save_experiment($post_id, $post) {
+    static function save_family($post_id, $post) {
         if ($post->post_status != 'publish') return;
-        $terms = wp_get_object_terms($post_id, 'experiment');
+        $terms = wp_get_object_terms($post_id, 'family');
         $term = reset($terms);
         if ($term) return;
         $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
         if ($parent_id) {
-            $terms = wp_get_object_terms($parent_id, 'experiment');
+            $terms = wp_get_object_terms($parent_id, 'family');
             $term = reset($terms);
-            wp_add_object_terms($post_id, $term->term_id, 'experiment');
+            wp_add_object_terms($post_id, $term->term_id, 'family');
         } else {
-            $term = wp_insert_term($post->post_title, 'experiment');
+            $term = wp_insert_term($post->post_title, 'family');
             $counter = 1;
             while (is_object($term) && is_a($term, 'WP_Error')) {
-                $term = wp_insert_term($post->post_title . $counter, 'experiment');
+                $term = wp_insert_term($post->post_title . $counter, 'family');
                 ++$counter;
             }
-            wp_add_object_terms($post_id, $term['term_id'], 'experiment');
+            wp_add_object_terms($post_id, $term['term_id'], 'family');
         }
     }
     

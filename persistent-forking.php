@@ -105,7 +105,7 @@ class PersistentForking {
         $fork = array(
             'post_author' => $author,
             'post_status' => 'draft',
-            'post_title' => $parent_post->post_title,
+            'post_title' => '[fork] ' . $parent_post->post_title,
             'post_type' => $parent_post->post_type
         );
         $fork_id = wp_insert_post($fork);

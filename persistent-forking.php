@@ -19,7 +19,7 @@ class PersistentForking {
         if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
-        add_action('add_meta_boxes', array('PersistentForking', 'editor_parent_metabox'));
+        add_action('add_meta_boxes', array('PersistentForking', 'editor_metabox'));
         add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
     }
     
@@ -151,17 +151,17 @@ class PersistentForking {
         exit;
     }
     
-    static function editor_parent_metabox( ) {
+    static function editor_metabox( ) {
         add_meta_box(
-            'persistfork_parent_reference',  // unique ID
-            'Parent',  // box title
-            array('PersistentForking', 'display_editor_parent_metabox'),  // callback
+            'persistfork_info',  // unique ID
+            'Forking',  // box title
+            array('PersistentForking', 'display_editor_metabox'),  // callback
             'post'  // post type
         );
     }
     
-    static function display_editor_parent_metabox( ) {
-        self::render('parent_metabox', false);
+    static function display_editor_metabox( ) {
+        self::render('admin_metabox', false);
     }
 }
 

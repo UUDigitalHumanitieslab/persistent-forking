@@ -58,6 +58,16 @@ class PersistentForking {
             array('jquery')
         );
     }
+    
+    static function render($template, $arguments) {
+        $path = dirname( __FILE__ ) . "/templates/{$template}.php";
+        extract($arguments);
+        ob_start();
+        include $path;
+        $text = ob_get_contents();
+        ob_end_clean();
+        return $text;
+    }
 
     static function add_fork_controls($content) {
         if (! current_user_can('edit_posts')) {
@@ -66,20 +76,12 @@ class PersistentForking {
         $post = $GLOBALS['post'];
         $post_id = $post->ID;
         if ($post->post_type != 'post') return $content;
-        $fork_url = add_query_arg(array(
-            'action' => 'persistent_fork',
-            'post' => $post_id,
-            'nonce' => wp_create_nonce('persistent_forking')
-        ), home_url());
-        $img = '<img src="' . plugins_url("/images/fork_icon.png", __FILE__) . '" style="display: inline;">';
-        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this post">' . $img . ' Fork</a>';
-        $parent_anchor = '';
-        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        if ($parent_id) {
-            $parent = get_post($parent_id);
-            $parent_anchor = ' | Forked from: <a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
-        }
-        return $fork_anchor . $parent_anchor . $content;
+        $image_url = plugins_url("/images/fork_icon.png", __FILE__);
+        $fork_box = self::render('public_fork_box', array(
+            'post_id'   => $post_id,
+            'image_url' => $image_url,
+        ));
+        return $fork_box . $content;
     }
     
     static function fork($parent_post = null, $author = null) {

@@ -147,18 +147,29 @@ class PersistentForking {
         $term = reset($terms);
         if ($term) return;
         $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        if ($parent_id) {
-            $terms = wp_get_object_terms($parent_id, 'family');
-            $term = reset($terms);
-            wp_add_object_terms($post_id, $term->term_id, 'family');
+        if (! $parent_id) return;
+        wp_add_object_terms(
+            $post_id,
+            self::get_post_family($parent_id),
+            'family'
+        );
+    }
+    
+    static function get_post_family($post_id) {
+        $terms = wp_get_object_terms($post_id, 'family');
+        $term = reset($terms);
+        if ($term) {
+            return $term->term_id;
         } else {
-            $term = wp_insert_term($post->post_title, 'family');
+            $post_title = get_post($post_id)->post_title;
+            $term = wp_insert_term($post_title, 'family');
             $counter = 1;
             while (is_object($term) && is_a($term, 'WP_Error')) {
-                $term = wp_insert_term($post->post_title . $counter, 'family');
+                $term = wp_insert_term($post_title . $counter, 'family');
                 ++$counter;
             }
             wp_add_object_terms($post_id, $term['term_id'], 'family');
+            return $term['term_id'];
         }
     }
     

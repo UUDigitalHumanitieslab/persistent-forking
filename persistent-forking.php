@@ -14,13 +14,37 @@ License URI: http://opensource.org/licenses/MIT
 class PersistentForking {
     
     static function add_hooks( ) {
-        add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
-        add_action('init', array('PersistentForking', 'create_family_taxonomies'), 0);
-        if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
-            add_action('init', array('PersistentForking', 'create_forking_form'));
+        add_filter(
+            'the_content', 
+            array('PersistentForking', 'add_fork_controls'), 
+            15
+        );
+        add_action(
+            'init', 
+            array('PersistentForking', 'create_family_taxonomies'), 
+            0
+        );
+        if (isset($_REQUEST['action']) 
+                && 'persistent_fork' === $_REQUEST['action']) {
+            add_action(
+                'init', 
+                array('PersistentForking', 'create_forking_form')
+            );
         }
-        add_action('add_meta_boxes', array('PersistentForking', 'editor_parent_metabox'));
-        add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
+        add_action(
+            'add_meta_boxes', 
+            array('PersistentForking', 'editor_metabox')
+        );
+        add_action(
+            'save_post', 
+            array('PersistentForking', 'save_family'), 
+            10, 
+            2
+        );
+        add_action(
+            'wp_enqueue_scripts', 
+            array('PersistentForking', 'enqueue_resources')
+        );
     }
     
     static function create_family_taxonomies( ) {
@@ -52,11 +76,28 @@ class PersistentForking {
         register_taxonomy( 'family', array( 'post' ), $args );
     }
     
-    static function custom_taxonomy_visualisation_callback( ) {
-        wp_enqueue_script( 'persistfork-tax-visualisation',
+    static function enqueue_resources( ) {
+        wp_enqueue_script(
+            'persistfork-tax-visualisation',
             plugins_url( '/js/visualisation.js', __FILE__ ),
             array('jquery')
         );
+        wp_enqueue_style(
+            'persistfork-inset-style',
+            plugins_url('/css/inset.css', __FILE__)
+        );
+    }
+    
+    static function render($template, $as_string, $arguments = array()) {
+        $path = dirname( __FILE__ ) . "/templates/{$template}.php";
+        extract($arguments);
+        if ($as_string) ob_start();
+        include $path;
+        if ($as_string) {
+            $text = ob_get_contents();
+            ob_end_clean();
+            return $text;
+        }
     }
 
     static function add_fork_controls($content) {
@@ -66,20 +107,12 @@ class PersistentForking {
         $post = $GLOBALS['post'];
         $post_id = $post->ID;
         if ($post->post_type != 'post') return $content;
-        $fork_url = add_query_arg(array(
-            'action' => 'persistent_fork',
-            'post' => $post_id,
-            'nonce' => wp_create_nonce('persistent_forking')
-        ), home_url());
-        $img = '<img src="' . plugins_url("/images/fork_icon.png", __FILE__) . '" style="display: inline;">';
-        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this post">' . $img . ' Fork</a>';
-        $parent_anchor = '';
-        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        if ($parent_id) {
-            $parent = get_post($parent_id);
-            $parent_anchor = ' | Forked from: <a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
-        }
-        return $fork_anchor . $parent_anchor . $content;
+        $image_url = plugins_url("/images/fork_icon.png", __FILE__);
+        $fork_box = self::render('public_fork_box', true, array(
+            'post_id'   => $post_id,
+            'image_url' => $image_url,
+        ));
+        return $fork_box . $content;
     }
     
     static function fork($parent_post = null, $author = null) {
@@ -147,24 +180,17 @@ class PersistentForking {
         exit;
     }
     
-    static function editor_parent_metabox( ) {
+    static function editor_metabox( ) {
         add_meta_box(
-            'persistfork_parent_reference',  // unique ID
-            'Parent',  // box title
-            array('PersistentForking', 'display_editor_parent_metabox'),  // callback
+            'persistfork_info',  // unique ID
+            'Forking',  // box title
+            array('PersistentForking', 'display_editor_metabox'),  // callback
             'post'  // post type
         );
     }
     
-    static function display_editor_parent_metabox( ) {
-        $post_id = $GLOBALS['post']->ID;
-        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        if (! $parent_id) {
-            echo 'none';
-        } else {
-            $parent = get_post($parent_id);
-            echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
-        }
+    static function display_editor_metabox( ) {
+        self::render('admin_metabox', false);
     }
 }
 

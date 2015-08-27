@@ -59,14 +59,16 @@ class PersistentForking {
         );
     }
     
-    static function render($template, $arguments) {
+    static function render($template, $as_string, $arguments = array()) {
         $path = dirname( __FILE__ ) . "/templates/{$template}.php";
         extract($arguments);
-        ob_start();
+        if ($as_string) ob_start();
         include $path;
-        $text = ob_get_contents();
-        ob_end_clean();
-        return $text;
+        if ($as_string) {
+            $text = ob_get_contents();
+            ob_end_clean();
+            return $text;
+        }
     }
 
     static function add_fork_controls($content) {
@@ -77,7 +79,7 @@ class PersistentForking {
         $post_id = $post->ID;
         if ($post->post_type != 'post') return $content;
         $image_url = plugins_url("/images/fork_icon.png", __FILE__);
-        $fork_box = self::render('public_fork_box', array(
+        $fork_box = self::render('public_fork_box', true, array(
             'post_id'   => $post_id,
             'image_url' => $image_url,
         ));
@@ -159,14 +161,7 @@ class PersistentForking {
     }
     
     static function display_editor_parent_metabox( ) {
-        $post_id = $GLOBALS['post']->ID;
-        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        if (! $parent_id) {
-            echo 'none';
-        } else {
-            $parent = get_post($parent_id);
-            echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
-        }
+        self::render('parent_metabox', false);
     }
 }
 

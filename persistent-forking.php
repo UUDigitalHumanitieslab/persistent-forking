@@ -21,6 +21,7 @@ class PersistentForking {
         }
         add_action('add_meta_boxes', array('PersistentForking', 'editor_metabox'));
         add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
+        add_action('wp_enqueue_scripts', array('PersistentForking', 'enqueue_resources'));
     }
     
     static function create_family_taxonomies( ) {
@@ -52,10 +53,15 @@ class PersistentForking {
         register_taxonomy( 'family', array( 'post' ), $args );
     }
     
-    static function custom_taxonomy_visualisation_callback( ) {
-        wp_enqueue_script( 'persistfork-tax-visualisation',
+    static function enqueue_resources( ) {
+        wp_enqueue_script(
+            'persistfork-tax-visualisation',
             plugins_url( '/js/visualisation.js', __FILE__ ),
             array('jquery')
+        );
+        wp_enqueue_style(
+            'persistfork-inset-style',
+            plugins_url('/css/inset.css', __FILE__)
         );
     }
     

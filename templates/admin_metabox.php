@@ -1,6 +1,6 @@
 <?php
 /**
- * Render the content of the Parent metabox in the admin post editing form.
+ * Render the content of the metabox in the admin post editing form.
  */
 $post_id = $GLOBALS['post']->ID;
 $parent_id = get_post_meta($post_id, '_persistfork-parent', true);

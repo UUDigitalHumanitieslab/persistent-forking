@@ -14,40 +14,42 @@ License URI: http://opensource.org/licenses/MIT
 class PersistentForking {
     
     static function add_hooks( ) {
-        add_action('init', array('PersistentForking', 'create_experiment_taxonomies'), 0);
         add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
+        add_action('init', array('PersistentForking', 'create_family_taxonomies'), 0);
         if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
             add_action('init', array('PersistentForking', 'create_forking_form'));
         }
         add_action('add_meta_boxes', array('PersistentForking', 'editor_parent_metabox'));
-        add_action('save_post', array('PersistentForking', 'save_customfields'), 10, 2);
+        add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
     }
     
-    static function create_experiment_taxonomies( ) {
+    static function create_family_taxonomies( ) {
         $labels = array(
-            'name'              => _x( 'Experiments', 'taxonomy general name' ),
-            'singular_name'     => _x( 'Experiment', 'taxonomy singular name' ),
-            'search_items'      => __( 'Search Experiments' ),
-            'all_items'         => __( 'All Experiments' ),
-            'parent_item'       => __( 'Parent Experiment' ),
-            'parent_item_colon' => __( 'Parent Experiment:' ),
-            'edit_item'         => __( 'Edit Experiment' ),
-            'update_item'       => __( 'Update Experiment' ),
-            'add_new_item'      => __( 'Add New Experiment' ),
-            'new_item_name'     => __( 'New Experiment Name' ),
-            'menu_name'         => __( 'Experiment' ),
+            'name'              => _x( 'Families', 'taxonomy general name' ),
+            'singular_name'     => _x( 'Family', 'taxonomy singular name' ),
+            'search_items'      => __( 'Search Families' ),
+            'all_items'         => __( 'All Families' ),
+            'parent_item'       => __( 'Parent Family' ),
+            'parent_item_colon' => __( 'Parent Family:' ),
+            'edit_item'         => __( 'Edit Family' ),
+            'update_item'       => __( 'Update Family' ),
+            'add_new_item'      => __( 'Add New Family' ),
+            'new_item_name'     => __( 'New Family Name' ),
+            'menu_name'         => __( 'Family' ),
         );
  
         $args = array(
-            'hierarchical'      => false,
             'labels'            => $labels,
+            'hierarchical'      => false,
             'show_ui'           => false,
+            'show_in_nav_menus' => true,
             'show_admin_column' => true,
             'query_var'         => true,
-            'rewrite'           => array( 'slug' => 'experiment' ),
+            'rewrite'           => array( 'slug' => 'family' ),
+            // 'meta_box_cb' => self::some_function,  // custom metabox callback
         );
  
-        register_taxonomy( 'experiment', array( 'post' ), $args );
+        register_taxonomy( 'family', array( 'post' ), $args );
     }
     
     static function custom_taxonomy_visualisation_callback( ) {
@@ -70,7 +72,7 @@ class PersistentForking {
             'nonce' => wp_create_nonce('persistent_forking')
         ), home_url());
         $img = '<img src="' . plugins_url("/img/fork_icon.png", __FILE__) . '" style="display: inline;">';
-        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this experiment">' . $img . ' Fork</a>';
+        $fork_anchor = '<a href="' . $fork_url . '" title="Fork this post">' . $img . ' Fork</a>';
         $parent_anchor = '';
         $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
         if ($parent_id) {
@@ -101,20 +103,30 @@ class PersistentForking {
         );
         $fork_id = wp_insert_post($fork);
         if (! $fork_id) return false;
-        self::save_customfields(
-            $fork_id, $fork, $parent_id,
-            get_post_meta($parent_id, '_persistfork-root')
-        );
+        add_post_meta($fork_id, '_persistfork-parent', $parent_id, true);
         
         return $fork_id;
     }
 
-    static function save_customfields($post_id, $post, $parent = null, $root = null) {
-        if ($parent != null) {
-            add_post_meta($post_id, '_persistfork-parent', $parent, true);
+    static function save_family($post_id, $post) {
+        if ($post->post_status != 'publish') return;
+        $terms = wp_get_object_terms($post_id, 'family');
+        $term = reset($terms);
+        if ($term) return;
+        $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
+        if ($parent_id) {
+            $terms = wp_get_object_terms($parent_id, 'family');
+            $term = reset($terms);
+            wp_add_object_terms($post_id, $term->term_id, 'family');
+        } else {
+            $term = wp_insert_term($post->post_title, 'family');
+            $counter = 1;
+            while (is_object($term) && is_a($term, 'WP_Error')) {
+                $term = wp_insert_term($post->post_title . $counter, 'family');
+                ++$counter;
+            }
+            wp_add_object_terms($post_id, $term['term_id'], 'family');
         }
-        if ($root == null) $root = $post_id;
-        add_post_meta($post_id, '_persistfork-root', $root, true);
     }
     
     static function create_forking_form( ) {
@@ -147,16 +159,15 @@ class PersistentForking {
     static function display_editor_parent_metabox( ) {
         $post_id = $GLOBALS['post']->ID;
         $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
-        $parent = get_post($parent_id);
-        echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        if (! $parent_id) {
+            echo 'none';
+        } else {
+            $parent = get_post($parent_id);
+            echo '<a href="' . get_permalink($parent_id) . '">' . $parent->post_title . '</a>';
+        }
     }
 }
 
 PersistentForking::add_hooks();
-
-// function print_current_hook() {
-//     echo '<p>' . current_filter() . '</p>';
-// }
-// add_action( 'all', 'print_current_hook' );
 
 ?>

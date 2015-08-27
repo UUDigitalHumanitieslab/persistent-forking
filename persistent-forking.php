@@ -14,14 +14,37 @@ License URI: http://opensource.org/licenses/MIT
 class PersistentForking {
     
     static function add_hooks( ) {
-        add_filter('the_content', array('PersistentForking', 'add_fork_controls'), 15);
-        add_action('init', array('PersistentForking', 'create_family_taxonomies'), 0);
-        if (isset($_REQUEST['action']) && 'persistent_fork' === $_REQUEST['action']) {
-            add_action('init', array('PersistentForking', 'create_forking_form'));
+        add_filter(
+            'the_content', 
+            array('PersistentForking', 'add_fork_controls'), 
+            15
+        );
+        add_action(
+            'init', 
+            array('PersistentForking', 'create_family_taxonomies'), 
+            0
+        );
+        if (isset($_REQUEST['action']) 
+                && 'persistent_fork' === $_REQUEST['action']) {
+            add_action(
+                'init', 
+                array('PersistentForking', 'create_forking_form')
+            );
         }
-        add_action('add_meta_boxes', array('PersistentForking', 'editor_metabox'));
-        add_action('save_post', array('PersistentForking', 'save_family'), 10, 2);
-        add_action('wp_enqueue_scripts', array('PersistentForking', 'enqueue_resources'));
+        add_action(
+            'add_meta_boxes', 
+            array('PersistentForking', 'editor_metabox')
+        );
+        add_action(
+            'save_post', 
+            array('PersistentForking', 'save_family'), 
+            10, 
+            2
+        );
+        add_action(
+            'wp_enqueue_scripts', 
+            array('PersistentForking', 'enqueue_resources')
+        );
     }
     
     static function create_family_taxonomies( ) {

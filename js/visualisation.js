@@ -6,7 +6,22 @@
 'use strict';
 
 var persistfork = {
-    options: {},
+    options: {
+        nodes: {
+            shadow: true,
+            shape: 'box'
+        },
+        edges: {
+            shadow: true,
+            arrows: 'to'
+        },
+        layout: {
+            randomSeed: 1,
+            hierarchical: {
+                direction: 'UD'
+            }
+        }
+    },
 
     'close': function() {
         this.container.hide();
@@ -22,13 +37,13 @@ var persistfork = {
 };
 
 jQuery(document).ready(function($) {
-    var container = $('<div>').attr('id', 'persistfork-container');
+    var container = $('<div>').attr('id', 'persistfork-container').text('Family network');
     var closeButton = $('<a>').attr('href', '#')
                               .click(function(evt) {
                                   evt.preventDefault();
                                   persistfork.close();
                               })
-                              .text('close');
+                              .text('Close');
     var arena = $('<div>');
     container.append(closeButton, arena);
     $(document.body).append(container);

@@ -11,10 +11,15 @@
     top: 50%;
     left: 50%;
     margin: -15em 0 0 -15em;
-    background: white;
     border: 2px solid black;
+    padding: .5em;
     border-radius: 1em;
-    text-align: right;
+    background: white;
+}
+
+#persistfork-container a {
+    float: right;
+    text-decoration: underline;
 }
 
 #persistfork-container div {

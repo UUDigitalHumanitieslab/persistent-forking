@@ -28,6 +28,7 @@ var persistfork = {
     },
 
     visualise: function(data) {
+        if (this.network) this.network.destroy();
         this.network = new vis.Network(this.arena[0], {
             nodes: new vis.DataSet(data.nodes),
             edges: new vis.DataSet(data.edges)

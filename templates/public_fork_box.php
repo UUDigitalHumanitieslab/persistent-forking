@@ -54,7 +54,7 @@ $family = reset($families);
         $current_edge = reset($edges); ?>
         <script>
             var data_<?= $family_id ?> = {
-                nodes: {
+                nodes: [
                     <?php while ($current_node !== false): ?>
                         {
                             id: <?= $current_node ?>,
@@ -65,8 +65,8 @@ $family = reset($families);
                         $current_node = next($nodes);
                         if ($current_node !== false) echo ',';
                     endwhile ?>
-                },
-                edges: {
+                ],
+                edges: [
                     <?php while ($current_edge !== false): ?>
                         {
                             from: <?= $current_edge['from'] ?>,
@@ -75,7 +75,7 @@ $family = reset($families);
                         $current_edge = next($edges);
                         if ($current_edge !== false) echo ',';
                     endwhile ?>
-                }
+                ]
             };
         </script>
     <?php endif ?>

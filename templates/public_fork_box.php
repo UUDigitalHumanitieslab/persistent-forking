@@ -34,7 +34,7 @@ $family = reset($families);
 <?php endif ?>
 <?php if ($family):
     $family_id = $family->term_id; ?>
-    | <a href="#" onclick="visualise(data_<?= $family_id ?>);">
+    | <a href="#" onclick="persistfork.visualise(data_<?= $family_id ?>); return false;">
         show family
     </a>
     <?php

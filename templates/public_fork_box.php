@@ -39,8 +39,10 @@ $family = reset($families);
         show family
     </a>
     <?php
+    global $persistfork_rendered;
     if (! isset($persistfork_rendered)) $persistfork_rendered = array();
-    if (! isset($persistfork_rendered[$family_id])):
+    echo implode(', ', array_keys($persistfork_rendered));
+    if (! array_key_exists($family_id, $persistfork_rendered)):
         $persistfork_rendered[$family_id] = true;
         $nodes = get_objects_in_term($family_id, 'family');
         $edges = array();
@@ -50,34 +52,31 @@ $family = reset($families);
                 $edges[] = array('from' => $parent_id, 'to' => $id);
             }
         }
-        reset($nodes);
-        $first_node = next($nodes);
-        $first_edge = next($edges); ?>
+        $current_node = reset($nodes);
+        $current_edge = reset($edges); ?>
         <script>
             var data_<?= $family_id ?> = {
                 nodes: {
-                    {
-                        id: <?= $first_node ?>,
-                        label: <?= get_post($first_node)->post_title ?>
-                    }
-                    <?php foreach ($nodes as $id): ?>
-                        , {
-                            id: <?= $id ?>,
-                            label: <?= get_post($id)->post_title ?>
-                        }
-                    <?php endforeach ?>
+                    <?php while ($current_node !== false): ?>
+                        {
+                            id: <?= $current_node ?>,
+                            label: '<?=
+                                esc_js(get_post($current_node)->post_title)
+                            ?>'
+                        }<?php
+                        $current_node = next($nodes);
+                        if ($current_node !== false) echo ',';
+                    endwhile ?>
                 },
                 edges: {
-                    {
-                        from: <?= $first_edge['from'] ?>,
-                        to: <?= $first_edge['to'] ?>
-                    }
-                    <?php foreach ($edges as $edge): ?>
-                        , {
-                            from: <?= $edge['from'] ?>,
-                            to: <?= $edge['to'] ?>
-                        }
-                    <?php endforeach ?>
+                    <?php while ($current_edge !== false): ?>
+                        {
+                            from: <?= $current_edge['from'] ?>,
+                            to: <?= $current_edge['to'] ?>
+                        }<?php
+                        $current_edge = next($edges);
+                        if ($current_edge !== false) echo ',';
+                    endwhile ?>
                 }
             };
         </script>

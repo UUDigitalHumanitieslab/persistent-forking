@@ -78,9 +78,24 @@ class PersistentForking {
     
     static function enqueue_resources( ) {
         wp_enqueue_script(
+            'vis-js',
+            '//cdnjs.cloudflare.com/ajax/libs/vis/4.8.1/vis.min.js',
+            array(),
+            '4.8.1',
+            true
+        );
+        wp_enqueue_script(
             'persistfork-tax-visualisation',
             plugins_url( '/js/visualisation.js', __FILE__ ),
-            array('jquery')
+            array('jquery', 'vis-js'),
+            false,
+            true
+        );
+        wp_enqueue_style(
+            'vis-css',
+            '//cdnjs.cloudflare.com/ajax/libs/vis/4.8.1/vis.min.css',
+            array(),
+            '4.8.1'
         );
         wp_enqueue_style(
             'persistfork-inset-style',

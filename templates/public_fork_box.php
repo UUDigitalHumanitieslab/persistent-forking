@@ -60,7 +60,8 @@ $family = reset($families);
                             id: <?= $current_node ?>,
                             label: '<?=
                                 esc_js(get_post($current_node)->post_title)
-                            ?>'
+                            ?>',
+                            href: '<?= get_permalink($current_node) ?>'
                         }<?php
                         $current_node = next($nodes);
                         if ($current_node !== false) echo ',';

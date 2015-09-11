@@ -34,6 +34,13 @@ var persistfork = {
             edges: new vis.DataSet(data.edges)
         }, this.options);
         this.container.show();
+        var linkTable = {};
+        for (var i in data.nodes) linkTable['' + data.nodes[i].id] = data.nodes[i].href;
+        this.network.on('click', function(params) {
+            if (params.nodes && params.nodes.length === 1) {
+                window.location = linkTable[params.nodes[0]];
+            }
+        });
     }
 };
 

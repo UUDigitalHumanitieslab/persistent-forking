@@ -33,15 +33,13 @@ $family = reset($families);
     </a>
 <?php endif ?>
 <?php if ($family):
-    $family_id = $family->term_id;
-    echo implode(', ', array_keys(get_object_vars($family))); ?>
+    $family_id = $family->term_id; ?>
     | <a href="#" onclick="visualise(data_<?= $family_id ?>);">
         show family
     </a>
     <?php
     global $persistfork_rendered;
     if (! isset($persistfork_rendered)) $persistfork_rendered = array();
-    echo implode(', ', array_keys($persistfork_rendered));
     if (! array_key_exists($family_id, $persistfork_rendered)):
         $persistfork_rendered[$family_id] = true;
         $nodes = get_objects_in_term($family_id, 'family');

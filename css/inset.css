@@ -26,3 +26,23 @@
     width: 28em;
     height: 27em;
 }
+
+#persistfork-inset {
+    padding: .5em;
+    border-radius: .5em;
+    margin-bottom: 1em;
+    font-size: 110%;
+    background-color: rgba(191, 191, 191, .4);
+}
+
+#persistfork-inset img {
+    display: inline;
+    margin-right: 1em;
+    margin-left: .5em;
+}
+
+#persistfork-inset a {
+    margin-right: 1em;
+    color: inherit;
+    text-decoration: underline;
+}

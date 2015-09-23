@@ -17,67 +17,62 @@ $parent_id = get_post_meta($post_id, '_persistfork-parent', true);
 $families = wp_get_object_terms($post_id, 'family');
 $family = reset($families);
 ?>
-<a href="<?= $fork_url ?>" title="Fork this post">
-    <img
-        src="<?= $image_url ?>"
-        title="Fork"
-        alt="Fork"
-        style="display: inline;"
-    />
-    Fork
-</a>
-<?php if ($parent_id): ?>
-    | Forked from:
-    <a href="<?= get_permalink($parent_id) ?>">
-        <?= get_post($parent_id)->post_title ?>
-    </a>
-<?php endif ?>
-<?php if ($family):
-    $family_id = $family->term_id; ?>
-    | <a href="#" onclick="persistfork.visualise(data_<?= $family_id ?>); return false;">
-        show family
-    </a>
-    <?php
-    global $persistfork_rendered;
-    if (! isset($persistfork_rendered)) $persistfork_rendered = array();
-    if (! array_key_exists($family_id, $persistfork_rendered)):
-        $persistfork_rendered[$family_id] = true;
-        $nodes = get_objects_in_term($family_id, 'family');
-        $edges = array();
-        foreach ($nodes as $id) {
-            $parent_id = get_post_meta($id, '_persistfork-parent', true);
-            if ($parent_id) {
-                $edges[] = array('from' => $parent_id, 'to' => $id);
-            }
-        }
-        $current_node = reset($nodes);
-        $current_edge = reset($edges); ?>
-        <script>
-            var data_<?= $family_id ?> = {
-                nodes: [
-                    <?php while ($current_node !== false): ?>
-                        {
-                            id: <?= $current_node ?>,
-                            label: '<?=
-                                esc_js(get_post($current_node)->post_title)
-                            ?>',
-                            href: '<?= get_permalink($current_node) ?>'
-                        }<?php
-                        $current_node = next($nodes);
-                        if ($current_node !== false) echo ',';
-                    endwhile ?>
-                ],
-                edges: [
-                    <?php while ($current_edge !== false): ?>
-                        {
-                            from: <?= $current_edge['from'] ?>,
-                            to: <?= $current_edge['to'] ?>
-                        }<?php
-                        $current_edge = next($edges);
-                        if ($current_edge !== false) echo ',';
-                    endwhile ?>
-                ]
-            };
-        </script>
+<div id="persistfork-inset">
+    <img src="<?= $image_url ?>" title="Fork" alt="Fork" />
+    <a href="<?= $fork_url ?>" title="Fork this post">Fork</a>
+    <?php if ($parent_id): ?>
+        Forked from:
+        <a href="<?= get_permalink($parent_id) ?>">
+            <?= get_post($parent_id)->post_title ?>
+        </a>
     <?php endif ?>
-<?php endif ?>
+    <?php if ($family):
+        $family_id = $family->term_id; ?>
+        <a href="#" onclick="persistfork.visualise(data_<?= $family_id ?>); return false;">
+            Show family
+        </a>
+        <?php
+        global $persistfork_rendered;
+        if (! isset($persistfork_rendered)) $persistfork_rendered = array();
+        if (! array_key_exists($family_id, $persistfork_rendered)):
+            $persistfork_rendered[$family_id] = true;
+            $nodes = get_objects_in_term($family_id, 'family');
+            $edges = array();
+            foreach ($nodes as $id) {
+                $parent_id = get_post_meta($id, '_persistfork-parent', true);
+                if ($parent_id) {
+                    $edges[] = array('from' => $parent_id, 'to' => $id);
+                }
+            }
+            $current_node = reset($nodes);
+            $current_edge = reset($edges); ?>
+            <script>
+                var data_<?= $family_id ?> = {
+                    nodes: [
+                        <?php while ($current_node !== false): ?>
+                            {
+                                id: <?= $current_node ?>,
+                                label: '<?=
+                                    esc_js(get_post($current_node)->post_title)
+                                ?>',
+                                href: '<?= get_permalink($current_node) ?>'
+                            }<?php
+                            $current_node = next($nodes);
+                            if ($current_node !== false) echo ',';
+                        endwhile ?>
+                    ],
+                    edges: [
+                        <?php while ($current_edge !== false): ?>
+                            {
+                                from: <?= $current_edge['from'] ?>,
+                                to: <?= $current_edge['to'] ?>
+                            }<?php
+                            $current_edge = next($edges);
+                            if ($current_edge !== false) echo ',';
+                        endwhile ?>
+                    ]
+                };
+            </script>
+        <?php endif ?>
+    <?php endif ?>
+</div>

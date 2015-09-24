@@ -1,27 +1,34 @@
-Persistent Forking (WordPress plugin)
--------------------------------------
+=== Persistent Forking (WordPress plugin) ===
+Contributors: UUDigitalHumanitiesLab
+Tags: forking, forks, posts
+Requires at least: 4.0
+Tested up to: 4.3
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-(c) 2015 Digital Humanities Lab, Utrecht University
-Author: Julian Gonggrijp
+Enable contributors to create permanent forks of existing posts.
+Visualise the family of any fork.
 
+
+== Description ==
 
 Persistent Forking allows contributors of your site to create
 permanent "forks" of existing posts. Every fork is a full-fledged
 post in its own right and can be published as such. This
-distinguishes Persistent Forking from the "Post Forking" plugin,
+distinguishes Persistent Forking from the *Post Forking* plugin,
 where forks are a collaborative tool in order to arrive at a single
 definitive version. The parent-child relationships between posts are
 tracked and it is possible to visualise the entire family tree of a
 post.
 
 
-INSTALLATION
+== Installation ==
 
 Just copy the plugin to your wp-content/plugins directory, then
 enable the plugin in your admin panel.
 
 
-SUPPORT
+== Support ==
 
 Please report any issue that you find while using the plugin at our
 GitHub repository:

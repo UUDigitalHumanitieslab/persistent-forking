@@ -79,9 +79,9 @@ class PersistentForking {
     static function enqueue_resources( ) {
         wp_enqueue_script(
             'vis-js',
-            '//cdnjs.cloudflare.com/ajax/libs/vis/4.8.1/vis.min.js',
+            plugins_url( '/js/vis.min.js', __FILE__ ),
             array(),
-            '4.8.1',
+            '4.8.2',
             true
         );
         wp_enqueue_script(
@@ -93,9 +93,9 @@ class PersistentForking {
         );
         wp_enqueue_style(
             'vis-css',
-            '//cdnjs.cloudflare.com/ajax/libs/vis/4.8.1/vis.min.css',
+            plugins_url('/css/vis.min.css', __FILE__),
             array(),
-            '4.8.1'
+            '4.8.2'
         );
         wp_enqueue_style(
             'persistfork-inset-style',

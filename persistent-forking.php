@@ -13,6 +13,24 @@ License URI: http://opensource.org/licenses/MIT
 
 class Persistent_Forking {
 
+	/**
+	 * Register all the hooks that are required in order for the plugin to
+	 * work. Called when the plugin is loaded.
+	 *
+	 * @see Persistent_Forking::add_fork_controls
+	 * @see Persistent_Forking::create_family_taxonomies
+	 * @see Persistent_Forking::create_forking_form
+	 * @see Persistent_Forking::editor_metabox
+	 * @see Persistent_Forking::save_family
+	 * @see Persistent_Forking::enqueue_resources
+	 * @global array $_REQUEST {
+	 *     Used to determine whether a conditional hook should be registered.
+	 *
+	 *     @type string action If this field is set and equal to
+	 *                         'persistent_fork', register a hook on init for
+	 *                         preparing a fork editing form.
+	 * }
+	 */
 	static function add_hooks( ) {
 		add_filter(
 			'the_content',
@@ -47,6 +65,15 @@ class Persistent_Forking {
 		);
 	}
 
+	/**
+	 * Register the 'family' custom taxonomy with WP core.
+	 *
+	 * A family consists of a root post and all its descendants (forks and forks
+	 * of descendants). The custom taxonomy makes it easy to find all members of
+	 * a family.
+	 *
+	 * @see register_taxonomy
+	 */
 	static function create_family_taxonomies( ) {
 		$labels = array(
 			'name'              => _x( 'Families', 'taxonomy general name' ),
@@ -76,6 +103,13 @@ class Persistent_Forking {
 		register_taxonomy( 'family', array( 'post' ), $args );
 	}
 
+	/**
+	 * Enqueue scripts and stylesheets with WordPress core.
+	 *
+	 * @see wp_enqueue_script
+	 * @see wp_enqueue_style
+	 * @link http://visjs.org
+	 */
 	static function enqueue_resources( ) {
 		wp_enqueue_script(
 			'vis-js',
@@ -103,6 +137,20 @@ class Persistent_Forking {
 		);
 	}
 
+	/**
+	 * Apply a given template, either sending the output directly to STDOUT or
+	 * returning a string.
+	 *
+	 * @param string $template Name of the template to apply, excluding the .php
+	 *                         suffix.
+	 * @param string $how Mode of operation. If 'as_string', return the result
+	 *                    of the applied template as a string. Otherwise, print
+	 *                    the result to STDOUT.
+	 * @param array $arguments Optional. Global variables for the template.
+	 *                         Default empty.
+	 * @return void|string If `$how` is 'as_string', a string with the template
+	 *                     output. Otherwise, nothing is returned.
+	 */
 	static function render( $template, $how, $arguments = array() ) {
 		$path = dirname( __FILE__ ) . "/templates/{$template}.php";
 		extract( $arguments );  // really needed here
@@ -117,6 +165,15 @@ class Persistent_Forking {
 		}
 	}
 
+	/**
+	 * Prepend HTML with forking controls to the post content.
+	 *
+	 * @see Persistent_Forking::render
+	 * @global WP_Post $post The post for which controls will be rendered.
+	 *
+	 * @param string $content Input filter state of the post HTML content.
+	 * @return string Output filter state, unchanged or with controls prepended.
+	 */
 	static function add_fork_controls( $content ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return $content;
@@ -134,6 +191,28 @@ class Persistent_Forking {
 		return $fork_box . $content;
 	}
 
+	/**
+	 * Create a new post (fork) based on the given parent and store the parent
+	 * relationship.
+	 *
+	 * Prepends a tag to the title of the parent post in order to obtain the
+	 * title of the fork. Saves the parent ID in a custom meta field. Otherwise,
+	 * the fork is blank new post.
+	 *
+	 * @see wp_insert_post
+	 * @see add_post_meta
+	 * @see wp_die
+	 * @global WP_Post|int $post Used as the parent if no parent argument is
+	 *                           passed.
+	 *
+	 * @param int|WP_Post $parent_post Optional. ID of the post to be forked
+	 *                                 from. Default current post.
+	 * @param int|WP_Post $author Optional. Author of the future fork. Default
+	 *                            current user.
+	 * @return int|bool ID of the newly created post if successful, false
+	 *                  otherwise. Will abort (wp_die) in case of insufficient
+	 *                  privileges.
+	 */
 	static function fork( $parent_post = null, $author = null ) {
 		global $post;
 		if ( null == $parent_post ) {
@@ -170,6 +249,24 @@ class Persistent_Forking {
 		return $fork_id;
 	}
 
+	/**
+	 * Associate the given post with a family, if relevant.
+	 *
+	 * A post is associated with a family under the following conditions:
+	 *
+	 * - The post has been published.
+	 * - The post has a parent.
+	 *
+	 * If the post is already associated with a family, this function is a
+	 * no-op. Otherwise, the family of the parent is assigned. If the parent
+	 * does not have a family yet (it is the root of the family), a new family
+	 * is created first.
+	 *
+	 * @see Persistent_Forking::get_post_family
+	 *
+	 * @param int $post_id ID of the post that needs a family associated.
+	 * @param WP_Post $post Complete data object of the same post.
+	 */
 	static function save_family( $post_id, $post ) {
 		if ( 'publish' != $post->post_status ) {
 			return;
@@ -190,6 +287,12 @@ class Persistent_Forking {
 		);
 	}
 
+	/**
+	 * Obtain family term ID of a post. Create family on the fly if necessary.
+	 *
+	 * @param int $post_id The ID of the post of which the family is requested.
+	 * @return int The ID of the family term to which the post belongs.
+	 */
 	static function get_post_family( $post_id ) {
 		$terms = wp_get_object_terms( $post_id, 'family' );
 		$term = reset( $terms );
@@ -208,6 +311,20 @@ class Persistent_Forking {
 		}
 	}
 
+	/**
+	 * If possible, create a new fork and forward the user to the editing form.
+	 *
+	 * @see current_user_can
+	 * @see wp_verify_nonce
+	 * @see Persistent_Forking::fork
+	 * @see wp_safe_redirect
+	 * @global array $_REQUEST {
+	 *     Request data, inspected to determine whether forking is possible.
+	 *     
+	 *     @type string nonce For security, should match nonce in session.
+	 *     @type string post Required. ID of the parent post.
+	 * }
+	 */
 	static function create_forking_form( ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return;
@@ -226,6 +343,12 @@ class Persistent_Forking {
 		exit;
 	}
 
+	/**
+	 * Register the metabox with WordPress.
+	 *
+	 * @see Persistent_Forking::display_editor_metabox
+	 * @see add_meta_box
+	 */
 	static function editor_metabox( ) {
 		add_meta_box(
 			'persistfork_info',	 // unique ID
@@ -235,6 +358,9 @@ class Persistent_Forking {
 		);
 	}
 
+	/**
+	 * Render the metabox in the post editing form.
+	 */
 	static function display_editor_metabox( ) {
 		self::render( 'admin_metabox', 'direct' );
 	}

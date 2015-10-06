@@ -1,6 +1,7 @@
 <?php
 /*
 Plugin Name: Persistent Forking
+Version: 1.0
 Author: Julian Gonggrijp, Digital Humanities Lab, Utrecht University
 Author URI: http://digitalhumanities.wp.hum.uu.nl
 License: MIT

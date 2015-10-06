@@ -6,6 +6,13 @@
 'use strict';
 
 var persistfork = {
+	/**
+	 * Options to be passed to vis.Network.
+	 *
+	 * @property object $nodes Default settings for rendering of nodes.
+	 * @property object $edges Default settings for rendering of edges.
+	 * @property object $layout Default settings for spatial layout of nodes.
+	 */
 	options: {
 		nodes: {
 			shadow: true,
@@ -23,10 +30,27 @@ var persistfork = {
 		}
 	},
 
+	/**
+	 * Hide the drawing arena and container.
+	 *
+	 * @see persistfork.visualise
+	 */
 	'close': function() {
 		this.container.hide();
 	},
 
+	/**
+	 * Draw a family graph, show the drawing arena and enable clickthrough.
+	 *
+	 * @see vis.Network
+	 * @see vis.DataSet
+	 * @link http://visjs.org/docs/network
+	 * @global object $persistfork Contains the drawing arena and container,
+	 *                             options and current network, if any.
+	 * @listens persistfork.network:click
+	 *
+	 * @param object $data Family tree data generated in public_fork_box.php.
+	 */
 	visualise: function( data ) {
 		var linkTable = {};
 		if ( this.network ) {
@@ -48,6 +72,15 @@ var persistfork = {
 	}
 };
 
+/**
+ * Initialize the persistfork object and drawing arena on document ready.
+ *
+ * @see persistfork.visualise
+ * @see persistfork.close
+ * @global object $persistfork Stores the drawing arena and container.
+ * @listens document:ready
+ * @listens (#persistfork-container a):click
+ */
 jQuery( document ).ready(function( $ ) {
 	var container = $( '<div>' )
 		.attr( 'id', 'persistfork-container' )

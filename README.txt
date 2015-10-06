@@ -28,6 +28,13 @@ Just copy the plugin to your wp-content/plugins directory, then
 enable the plugin in your admin panel.
 
 
+== Screenshots ==
+
+1. Forking controls are added to the top of every post. This is only visible for members of your site who can create posts.
+2. When you click the "Fork" control, a new post is created and you are redirected to the editing form. The direct parent and the family are displayed in a metabox (red circle). The title of the parent post is copied with "[fork]" in front. As you can see, post contents are not copied over to the fork.
+3. When you click the "Show family" control, all parent-child relations within the family are displayed in a tree diagram. You can click on a node to go to the corresponding post.
+
+
 == Support ==
 
 Please report any issue that you find while using the plugin at our

@@ -8,9 +8,8 @@ License URI: http://opensource.org/licenses/MIT
 */
 
 /**
-* Description
+* Namespace for all plugin functions.
 */
-
 class Persistent_Forking {
 
 	/**
@@ -301,6 +300,7 @@ class Persistent_Forking {
 		} else {
 			$post_title = get_post( $post_id )->post_title;
 			$term = wp_insert_term( $post_title, 'family' );
+			// The following loop exists to handle name collisions.
 			$counter = 1;
 			while ( is_object( $term ) && is_a( $term, 'WP_Error' ) ) {
 				$term = wp_insert_term( $post_title . $counter, 'family' );

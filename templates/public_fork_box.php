@@ -32,8 +32,10 @@ $family = reset( $families );
 			Show family
 		</a>
 		<?php
+		// Henceforth: JSON for vis.js graph. See also visualisation.js.
 		global $persistfork_rendered;
 		if ( ! isset( $persistfork_rendered ) ) $persistfork_rendered = array();
+		// Each family tree is represented only once.
 		if ( ! array_key_exists( $family_id, $persistfork_rendered ) ):
 			$persistfork_rendered[ $family_id ] = true;
 			$nodes = get_objects_in_term( $family_id, 'family' );
